@@ -1,37 +1,54 @@
 ### React Component Code Review
 
-- What does the following component do?
-- Are there any problems with it? If so, what are they?
-- Are there any improvements/changes you would make?
-
 ```jsx
-import React from 'react'
+import React, {h} from 'react'
+import { connect } from "react-redux";
+import { withRouter } from "react-router-dom";
+import { getItems, onClick } from "Actions/items_action";
 
 class SomeListComponent extends React.Component {
-  constructor (props) {
-    this.state = { items: props.items }
-  }
+    constructor (props) {
+        super(props);
+        this.state = { items: '' }
+    }
 
-  shouldComponentUpdate (nextProps) {
-    return nextProps.items !== this.props.items
-  }
+    componentWillMount() {
+        this.props.dispatch(getItems());
+    }
 
-  handleClick (index) {
-    this.props.onClick(index)
-  }
+    componentDidUpdate() {
+        this.state = { items: this.props.itemsList }
+    }
 
-  renderElement (item, index) {
-    return <li onClick={() => this.handleClick(index)}>{item.text}</li>
-  }
+    shouldComponentUpdate (nextProps) {
+        return nextProps.itemsList !== this.props.itemsList
+    }
 
-  render () {
-    return (
-      <ul style={{ backgroundColor: 'red', height: 100 }}>
-        {this.state.items.map((item, i) => this.renderElement(item, i))}
-      </ul>
-    )
-  }
+    handleClick (index) {
+        this.props.dispatch(onClick(index));
+    }
+
+    renderElement (item, index) {
+        return <li onClick={() => this.handleClick(index)}>{item.text}</li>
+    }
+
+    render () {
+        if(this.state.items) {
+            return (
+                <ul style={{backgroundColor: 'red', height: 100}}>
+                    {this.state.items.map((item, i) => this.renderElement(item, i))}
+                </ul>
+            )
+        }
+    }
 }
 
-export default SomeListComponent
+function mapstateToProps(state) {
+    return {
+        itemsList: state.itemreducer.items,
+    };
+}
+const SomeListComponentRouting = withRouter(SomeListComponent);
+
+export default connect(mapstateToProps)(SomeListComponentRouting);
 ```
